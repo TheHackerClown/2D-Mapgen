@@ -5,73 +5,123 @@ const btn = document.getElementById('preptodie');
 const rldbtn = document.getElementById('rld');
 
 document.addEventListener("DOMContentLoaded", () => {
-    const blocksize = 40;
-    const rows = Math.floor(canvas.height / blocksize);
-    const columns = Math.floor(canvas.width / blocksize);
-    
-    rldbtn.onclick = () => {rld()};
-    
+
+    rldbtn.onclick = () => { rld() };
+
     //access -> map[y -> 0 - rows][x -> 0 - columns]
-    
+    const columndef = 25;
+    const rowdef = 11;
 
     //Map Generator Algorithm
-    function MAPGEN(blocksize,columns,rowcurr=3, colcurr=0) {
-        let map = new Array(columns);// Map Array
-        
+    function MAPGEN(columns, rows, rowcurr = 8, colcurr = 0) {
+        let map = new Array(rows);// Map Array
+
         //Strict Checking for Out Of Map Coordinates
-        const isdefined = (map,row,col) => {return map[row] !== undefined && map[row][col] !== undefined;}
+        const isdefined = (map, row, col) => { return map[row] !== undefined && map[row][col] !== undefined; }
         //Blank Space Flood Fill
         for (let i = 0; i < rows; i++) {
-            map[i] = new Array(columns).fill(1);
+            map[i] = new Array(columns).fill(0);
         }
         //Starting Point
         map[rowcurr][colcurr] = 0;
         let found = 0;// Constraint for Loop till Favourable Path is Found
-        const dir = [[-1,0],[0,1],[1,0]]; // Direction Array
+        const dir = [[-1, 0], [0, 1], [1, 0]]; // Direction Array
 
         //Looping Path Tracer until end point contains column 3
         while (1 != found) {
-            for (let j = 0;j < blocksize*2; j++){
+            for (let j = 0; j < 40 * 2; j++) {
                 let value = Math.floor(Math.random() * dir.length);//Random Index For Direction Array
-                value = value == 3 ? 2: value; // Rare Case Check
-                let [dr,dc] = dir[value];//Random Direction
-                if ( isdefined(map,rowcurr+dr,colcurr+dc) && colcurr+dc >= 0 && colcurr+dc < columns ) {
-                    rowcurr += dr;colcurr+= dc;//Move Pointer
-                    map[rowcurr][colcurr] = 0;//Fill Path
-                    if (isdefined(map,rowcurr,colcurr+dc)){
-                        map[rowcurr][colcurr+dc] = 0//Adding FLood while continuing towards the right direction
+                value = value == 3 ? 2 : value; // Rare Case Check
+                let [dr, dc] = dir[value];//Random Direction
+                if (isdefined(map, rowcurr + dr, colcurr + dc) && colcurr + dc >= 0 && colcurr + dc < columns) {
+                    rowcurr += dr; colcurr += dc;//Move Pointer
+                    map[rowcurr][colcurr] = 1;//Fill Path
+                    if (isdefined(map, rowcurr, colcurr + dc)) {
+                        map[rowcurr][colcurr + dc] = 1//Adding FLood while continuing towards the right direction
                     }
                 }
-                
+
             }
-            if (map[3][columns-1] == 0) {
+
+            if (map[8][columns - 1] == 1) {
                 found++;
                 break;
-            }       
+            }
         }
 
         //End Filter, to remove garbage values
-        for (let j = 0;j< rows;j++) {
-            while (map[j].length > columns) {
-                map[j].pop()
+        for (let i = 0; i < rows; i++) {
+            for (let j = 0; j < columns; j++) {
+                if (map[i][j] === 0 && isdefined(map, i - 1, j) && map[i - 1][j] == 1) {
+                    map[i][j] = 1;
+                }
             }
         }
-        map[4][0] == 0;
-        map[2][0] == 0;
-        map[4][columns-1] == 0;
-        map[2][columns-1] == 0;
+
+        let fixed = 0;
+        let emptyset = new Array(columns).fill(0);
+        let downpadding = new Array(columns).fill(1);
+        while (fixed < 1) {
+            for (let i = 0; i < rows; i++) {
+                let result = map[i].every((value) => { value === 1 });
+                if (result) {
+                    map = map.filter((_, ind) => { ind !== i });
+                    map.unshift(emptyset);
+                } else { fixed += 1; }
+            }
+        }
+        if (!map[rows - 1].every((val => val === 1))) {
+            map.push(downpadding);
+            console.log(map)
+        }
+        for (let j = 0; j < 5; j++) {
+            map[j] = emptyset;
+        }
+
+        for (let j = 0; j < rows; j++) {
+            while (map[j].length > columns) {
+                map[j].pop();
+            }
+        }
+        while (map.length > rows) {
+            map.shift();
+        }
+
         return map;
     }
 
+    const combineArrays = (arrays) => {
+        const rows = arrays[0].length; // Number of rows
+        const cols = arrays.reduce((sum, array) => sum + array[0].length, 0); // Total width
+        const combined = [];
+
+        for (let i = 0; i < rows; i++) {
+            const row = [];
+            for (const array of arrays) {
+                row.push(...array[i]);
+            }
+            combined.push(row);
+        }
+        return combined;
+    };
+
     //Client Side Drawing
-    function drawMap(map,blocksize,columns,rows) {
-        for (let col = 0; col < columns; col++) {
-            for (let row = 0; row < rows; row++) {
-                ctx.fillStyle = map[row][col] === 0 ? 'black' : 'white';
-                ctx.fillRect(col * blocksize, row * blocksize, blocksize, blocksize);
+    const drawArrayOnCanvas = (array) => {
+        const canvas = document.getElementById('render');
+        const ctx = canvas.getContext('2d');
+
+        const cellSize = 20; // Size of each subelement (adjust as needed)
+        canvas.width = array[0].length * cellSize; // Total width
+        canvas.height = array.length * cellSize; // Total height
+
+        for (let i = 0; i < array.length; i++) {
+            for (let j = 0; j < array[i].length; j++) {
+                const value = array[i][j];
+                ctx.fillStyle = value === 1 ? 'black' : 'white'; // Black for 1, White for 0
+                ctx.fillRect(j * cellSize, i * cellSize, cellSize, cellSize);
             }
         }
-    }
+    };
 
     //Prints Map to Console
     function printmap(map) {
@@ -79,9 +129,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function rld() {
-        let map = MAPGEN(blocksize,columns);
-        btn.onclick = () => {printmap(map)};
-        drawMap(map,blocksize,columns,rows);
+        let map = combineArrays([MAPGEN(columndef, rowdef), MAPGEN(columndef, rowdef), MAPGEN(columndef, rowdef), MAPGEN(columndef, rowdef), MAPGEN(columndef, rowdef)])
+        btn.onclick = () => { printmap(map) };
+        drawArrayOnCanvas(map);
     }
 
     rld();
