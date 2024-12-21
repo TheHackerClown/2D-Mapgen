@@ -67,7 +67,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function drawMap(map,blocksize,columns,rows) {
         for (let col = 0; col < columns; col++) {
             for (let row = 0; row < rows; row++) {
-                ctx.fillStyle = map[row][col] === 0 ? 'white' : 'black';
+                ctx.fillStyle = map[row][col] === 0 ? 'black' : 'white';
                 ctx.fillRect(col * blocksize, row * blocksize, blocksize, blocksize);
             }
         }
