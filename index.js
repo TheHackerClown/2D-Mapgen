@@ -136,27 +136,6 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
     };
-    const removeSingleBlackBlockColumns = (array) => {
-        const rows = array.length;
-        const cols = array[0].length;
-        const columnCounts = Array(cols).fill(0);
-
-        // Count the number of 1s in each column
-        for (let i = 0; i < rows; i++) {
-            for (let j = 0; j < cols; j++) {
-                if (array[i][j] === 1) {
-                    columnCounts[j]++;
-                }
-            }
-        }
-
-        // Keep only columns where the count of 1s is not exactly 1
-        const filteredArray = array.map(row => {
-            return row.filter((_, colIndex) => columnCounts[colIndex] !== 1);
-        });
-
-        return filteredArray;
-    };
     const removeColumns = (array) => {
         const rows = array.length;
         const cols = array[0].length;
@@ -171,13 +150,13 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
-        // Keep only columns where the count of 1s is not exactly 1
+        // Keep only columns where the count of 1s is not exactly 2
         // AND exclude the first and last column
         const filteredArray = array.map(row => {
             return row.filter((_, colIndex) =>
                 colIndex !== 0 && // Exclude first column
                 colIndex !== cols - 1 && // Exclude last column
-                columnCounts[colIndex] !== 1 // Exclude columns with exactly one black block
+                columnCounts[colIndex] > 2 // Exclude columns with exactly two black blocks
             );
         });
 
@@ -190,7 +169,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function rld() {
-        let map = removeColumns(removeSingleBlackBlockColumns(combineArrays([MAPGEN(columndef, rowdef), MAPGEN(columndef, rowdef), MAPGEN(columndef, rowdef), MAPGEN(columndef, rowdef), MAPGEN(columndef, rowdef)])));
+        let map = removeColumns(combineArrays([MAPGEN(columndef, rowdef), MAPGEN(columndef, rowdef), MAPGEN(columndef, rowdef), MAPGEN(columndef, rowdef), MAPGEN(columndef, rowdef)]));
         btn.onclick = () => { printmap(map) };
         drawArrayOnCanvas(map);
     }
