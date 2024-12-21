@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     //access -> map[y -> 0 - rows][x -> 0 - columns]
     const columndef = 25;
-    const rowdef = 11;
+    const rowdef = 12;
 
     const isdefined = (map, row, col) => { return map[row] !== undefined && map[row][col] !== undefined; }
 
