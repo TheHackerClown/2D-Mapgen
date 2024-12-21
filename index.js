@@ -12,12 +12,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const columndef = 25;
     const rowdef = 11;
 
+    const isdefined = (map, row, col) => { return map[row] !== undefined && map[row][col] !== undefined; }
+
     //Map Generator Algorithm
     function MAPGEN(columns, rows, rowcurr = 8, colcurr = 0) {
         let map = new Array(rows);// Map Array
 
-        //Strict Checking for Out Of Map Coordinates
-        const isdefined = (map, row, col) => { return map[row] !== undefined && map[row][col] !== undefined; }
+
         //Blank Space Flood Fill
         for (let i = 0; i < rows; i++) {
             map[i] = new Array(columns).fill(0);
@@ -102,6 +103,19 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             combined.push(row);
         }
+        // for (let j = 0; j < cols; j++) {
+        //     for (let i = 0; j < rows; i++) {
+        //         if (isdefined(combined, i, j) && combined[i][j] === 0) {
+        //             if (isdefined(combined, i, j - 1) && isdefined(combined, i, j + 1) && combined[i][j + 1] === 1 && combined[i][j - 1] === 1) {
+        //                 combined[i][j] = 1;
+        //             } else if (!isdefined(combined, i, j - 1) && isdefined(combined, i, j + 1) && combined[i][j + 1] === 1) {
+        //                 combined[i][j] = 1;
+        //             } else if (isdefined(combined, i, j - 1) && !isdefined(combined, i, j + 1) && combined[i][j - 1] === 1) {
+        //                 combined[i][j] = 1;
+        //             }
+        //         }
+        //     }
+        // }
         return combined;
     };
 
@@ -122,6 +136,53 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
     };
+    const removeSingleBlackBlockColumns = (array) => {
+        const rows = array.length;
+        const cols = array[0].length;
+        const columnCounts = Array(cols).fill(0);
+
+        // Count the number of 1s in each column
+        for (let i = 0; i < rows; i++) {
+            for (let j = 0; j < cols; j++) {
+                if (array[i][j] === 1) {
+                    columnCounts[j]++;
+                }
+            }
+        }
+
+        // Keep only columns where the count of 1s is not exactly 1
+        const filteredArray = array.map(row => {
+            return row.filter((_, colIndex) => columnCounts[colIndex] !== 1);
+        });
+
+        return filteredArray;
+    };
+    const removeColumns = (array) => {
+        const rows = array.length;
+        const cols = array[0].length;
+        const columnCounts = Array(cols).fill(0);
+
+        // Count the number of 1s in each column
+        for (let i = 0; i < rows; i++) {
+            for (let j = 0; j < cols; j++) {
+                if (array[i][j] === 1) {
+                    columnCounts[j]++;
+                }
+            }
+        }
+
+        // Keep only columns where the count of 1s is not exactly 1
+        // AND exclude the first and last column
+        const filteredArray = array.map(row => {
+            return row.filter((_, colIndex) =>
+                colIndex !== 0 && // Exclude first column
+                colIndex !== cols - 1 && // Exclude last column
+                columnCounts[colIndex] !== 1 // Exclude columns with exactly one black block
+            );
+        });
+
+        return filteredArray;
+    };
 
     //Prints Map to Console
     function printmap(map) {
@@ -129,7 +190,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function rld() {
-        let map = combineArrays([MAPGEN(columndef, rowdef), MAPGEN(columndef, rowdef), MAPGEN(columndef, rowdef), MAPGEN(columndef, rowdef), MAPGEN(columndef, rowdef)])
+        let map = removeColumns(removeSingleBlackBlockColumns(combineArrays([MAPGEN(columndef, rowdef), MAPGEN(columndef, rowdef), MAPGEN(columndef, rowdef), MAPGEN(columndef, rowdef), MAPGEN(columndef, rowdef)])));
         btn.onclick = () => { printmap(map) };
         drawArrayOnCanvas(map);
     }
