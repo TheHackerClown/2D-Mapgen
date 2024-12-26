@@ -73,7 +73,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         if (!map[rows - 1].every((val => val === 1))) {
             map.push(downpadding);
-            console.log(map)
         }
         for (let j = 0; j < 5; j++) {
             map[j] = emptyset;
