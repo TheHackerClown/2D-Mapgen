@@ -159,6 +159,7 @@ document.addEventListener("DOMContentLoaded", () => {
             );
         });
         
+        //Limit Rows to 100 for Hellfire
         for (let rows = 0;rows < filteredArray.length; rows++) {
             while (filteredArray[rows].length > 100) {
                 filteredArray[rows].pop();
