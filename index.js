@@ -158,7 +158,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 columnCounts[colIndex] > 2 // Exclude columns with exactly two black blocks
             );
         });
-
+        
+        for (let rows = 0;rows < filteredArray.length; rows++) {
+            while (filteredArray[rows].length > 100) {
+                filteredArray[rows].pop();
+            }
+        }
         return filteredArray;
     };
 
